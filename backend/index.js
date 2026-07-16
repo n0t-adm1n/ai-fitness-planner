@@ -105,6 +105,62 @@ cron.schedule('0 6 * * *', async () => {
   } catch (error) {
     console.error('Error during autonomous agent execution:', error);
   }
+}, {
+  scheduled: true,
+  timezone: "Asia/Kolkata"
+});
+
+// --- Manual Cron Trigger Route ---
+app.get('/api/trigger-emails', async (req, res) => {
+  // 1. Add a simple secret key to prevent random people from triggering your emails
+  const { secret } = req.query;
+  if (secret !== process.env.CRON_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    console.log("Wake up! Triggering daily AI fitness emails...");
+    
+    // 2. Paste your exact Firebase fetching and Nodemailer logic here!
+    const usersSnapshot = await db.collection('users').get();
+    
+    if (usersSnapshot.empty) {
+      console.log('No users found in database.');
+      return;
+    }
+
+    // 2. Loop through each user and generate their custom plan
+    for (const doc of usersSnapshot.docs) {
+      const user = doc.data();
+      console.log(`Generating plan for: ${user.email}`);
+
+      // Create the prompt dynamically based on the user's database entry
+      const promptTemplate = PromptTemplate.fromTemplate(`
+        You are an expert personal trainer and nutritionist. 
+        Create a 1-day workout and meal plan for this user:
+        - Goal: {fitnessGoal}
+        - Equipment: {equipment}
+        - Diet: {dietaryRestrictions}
+        Format nicely in Markdown.
+      `);
+      
+      const chain = promptTemplate.pipe(llm);
+      const response = await chain.invoke({
+        fitnessGoal: user.fitnessGoal,
+        equipment: user.equipment,
+        dietaryRestrictions: user.dietaryRestrictions
+      });
+
+      // 3. Email the generated plan to the user
+      await sendPlanEmail(user.email, response.content);
+      console.log(`✅ Plan successfully sent to ${user.email}`);
+    }
+    
+    res.status(200).json({ message: 'Emails triggered successfully.' });
+  } catch (error) {
+    console.error('Error triggering emails:', error);
+    res.status(500).json({ error: 'Failed to send emails.' });
+  }
 });
 
 app.get('/', (req, res) => {
