@@ -63,7 +63,7 @@ app.post('/api/test-email', async (req, res) => {
 // --- The Autonomous Agent Cron Job ---
 // For testing purposes, '* * * * *' runs the job every single minute.
 // Once in production, you would change this to '0 6 * * *' to run at 6:00 AM daily.
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 6 * * *', async () => {
   console.log('🤖 AI Agent waking up to generate daily plans...');
 
   try {
