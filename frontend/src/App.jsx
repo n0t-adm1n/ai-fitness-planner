@@ -19,7 +19,7 @@ function App() {
     
     try {
       // We will need to create this route in your Express backend next!
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch('https://ai-fitness-planner-amim.onrender.com/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
