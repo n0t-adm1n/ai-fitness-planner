@@ -111,30 +111,38 @@ cron.schedule('0 6 * * *', async () => {
 });
 
 // --- Manual Cron Trigger Route ---
-app.get('/api/trigger-emails', async (req, res) => {
-  // 1. Add a simple secret key to prevent random people from triggering your emails
+app.get('/api/trigger-emails', (req, res) => { 
+  // Notice we removed 'async' from this route!
+  
   const { secret } = req.query;
   if (secret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  // 1. IMMEDIATELY send success back to cron-job.org so it hangs up happily
+  res.status(200).json({ message: 'Job triggered! Processing emails in the background.' });
+
+  // 2. Fire off the heavy lifting function in the background (no 'await')
+  processDailyEmails().catch(error => console.error("Background task failed:", error));
+});
+
+// --- The Heavy Lifting Function ---
+// We moved the loop down here into its own async function
+async function processDailyEmails() {
   try {
     console.log("Wake up! Triggering daily AI fitness emails...");
     
-    // 2. Paste your exact Firebase fetching and Nodemailer logic here!
     const usersSnapshot = await db.collection('users').get();
     
     if (usersSnapshot.empty) {
       console.log('No users found in database.');
-      return;
+      return; 
     }
 
-    // 2. Loop through each user and generate their custom plan
     for (const doc of usersSnapshot.docs) {
       const user = doc.data();
       console.log(`Generating plan for: ${user.email}`);
 
-      // Create the prompt dynamically based on the user's database entry
       const promptTemplate = PromptTemplate.fromTemplate(`
         You are an expert personal trainer and nutritionist. 
         Create a 1-day workout and meal plan for this user:
@@ -151,17 +159,19 @@ app.get('/api/trigger-emails', async (req, res) => {
         dietaryRestrictions: user.dietaryRestrictions
       });
 
-      // 3. Email the generated plan to the user
       await sendPlanEmail(user.email, response.content);
       console.log(`✅ Plan successfully sent to ${user.email}`);
+      
+      // The 4-second delay
+      await delay(4000); 
     }
     
-    res.status(200).json({ message: 'Emails triggered successfully.' });
+    console.log("🎉 All daily emails finished!");
+
   } catch (error) {
-    console.error('Error triggering emails:', error);
-    res.status(500).json({ error: 'Failed to send emails.' });
+    console.error('Error in background email task:', error);
   }
-});
+}
 
 app.get('/', (req, res) => {
   res.send('AI Fitness Planner Backend is running!');
