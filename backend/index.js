@@ -7,6 +7,8 @@ import { sendPlanEmail } from './emailServices.js';
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Load environment variables
 dotenv.config();
 
@@ -100,6 +102,9 @@ cron.schedule('0 6 * * *', async () => {
       // 3. Email the generated plan to the user
       await sendPlanEmail(user.email, response.content);
       console.log(`✅ Plan successfully sent to ${user.email}`);
+
+      // 4. Delay for 4 seconds to avoid hitting email rate limits
+      await delay(4000); 
     }
 
   } catch (error) {
