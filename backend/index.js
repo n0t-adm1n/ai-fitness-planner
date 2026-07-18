@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import {db} from './firebase.js'; // Import the Firestore database instance
-import { sendPlanEmail } from './emailServices.js'; 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { sendPlanTelegram } from './telegramServices.js';
