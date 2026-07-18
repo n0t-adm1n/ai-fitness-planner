@@ -6,13 +6,28 @@ import { marked } from 'marked'; // <-- Import the parser
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', 
-  port: 587,              // Explicitly forces the alternative port
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    },
+
+    connectionTimeout: 60000,
+    greetingTimeout: 30000,
+    socketTimeout: 60000
+});
+
+transporter.verify((err) => {
+
+    if (err)
+        console.error(err);
+
+    else
+        console.log("SMTP Ready");
+
 });
 
 export const sendPlanEmail = async (toEmail, markdownPlan) => {

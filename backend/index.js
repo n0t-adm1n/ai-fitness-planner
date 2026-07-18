@@ -112,8 +112,13 @@ async function processDailyEmails() {
         dietaryRestrictions: user.dietaryRestrictions
       });
 
-      await sendPlanEmail(user.email, response.content);
-      console.log(`✅ Plan successfully sent to ${user.email}`);
+      const success = await sendPlanEmail(user.email, response.content);
+
+      if(success) {
+        console.log(`✅ Plan successfully sent to ${user.email}`);
+      } else {
+        console.error(`❌ Failed to send plan to ${user.email}`);
+      }
       
       // The 4-second delay
       await delay(4000); 
