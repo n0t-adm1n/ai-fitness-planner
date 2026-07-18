@@ -3,6 +3,7 @@ import { useState } from 'react';
 function App() {
   const [formData, setFormData] = useState({
     email: '',
+    telegramChatId: '', // <-- Added new state field
     fitnessGoal: '',
     equipment: '',
     dietaryRestrictions: ''
@@ -18,7 +19,6 @@ function App() {
     setStatus('Submitting...');
     
     try {
-      // We will need to create this route in your Express backend next!
       const response = await fetch('https://ai-fitness-planner-amim.onrender.com/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -26,8 +26,9 @@ function App() {
       });
 
       if (response.ok) {
-        setStatus('Success! Your AI Agent is now active.');
-        setFormData({ email: '', fitnessGoal: '', equipment: '', dietaryRestrictions: '' });
+        setStatus('Success! Your AI Agent is now active on Telegram.');
+        // Clear out the new field on success
+        setFormData({ email: '', telegramChatId: '', fitnessGoal: '', equipment: '', dietaryRestrictions: '' });
       } else {
         setStatus('Error activating agent. Please try again.');
       }
@@ -44,7 +45,7 @@ function App() {
           AI Fitness Planner
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Sign up to receive daily personalized workout and meal plans.
+          Sign up to receive daily personalized workout and meal plans directly to your phone.
         </p>
       </div>
 
@@ -57,6 +58,18 @@ function App() {
               <div className="mt-1">
                 <input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </div>
+            </div>
+
+            {/* --- NEW TELEGRAM CHAT ID FIELD --- */}
+            <div>
+              <label htmlFor="telegramChatId" className="block text-sm font-medium text-gray-700">Telegram Chat ID</label>
+              <div className="mt-1">
+                <input id="telegramChatId" name="telegramChatId" type="text" placeholder="e.g., 123456789" required value={formData.telegramChatId} onChange={handleChange} className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                <strong>Step 1:</strong> Start a chat with <a href="https://t.me/ai_fitness_planner_bot" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">@ai_fitness_planner_bot</a> so it has permission to message you.<br/>
+                <strong>Step 2:</strong> To find your ID, search for <strong>@userinfobot</strong> on Telegram and send it a message. It will instantly reply with your numeric ID to paste here.
+              </p>
             </div>
 
             <div>
