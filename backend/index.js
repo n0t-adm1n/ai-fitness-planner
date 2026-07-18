@@ -5,6 +5,7 @@ import {db} from './firebase.js'; // Import the Firestore database instance
 import { sendPlanEmail } from './emailServices.js'; 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { sendPlanTelegram } from './telegramServices.js';
 
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
 console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
@@ -115,7 +116,7 @@ async function processDailyEmails() {
         dietaryRestrictions: user.dietaryRestrictions
       });
 
-      const success = await sendPlanEmail(user.email, response.content);
+      const success = await sendPlanTelegram(user.email, response.content);
 
       if(success) {
         console.log(`✅ Plan successfully sent to ${user.email}`);
