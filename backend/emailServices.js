@@ -20,14 +20,12 @@ const transporter = nodemailer.createTransport({
     socketTimeout: 60000
 });
 
-transporter.verify((err) => {
-
-    if (err)
-        console.error(err);
-
-    else
-        console.log("SMTP Ready");
-
+transporter.verify((err, success) => {
+    if (err) {
+        console.error("SMTP Verify Failed:", err);
+    } else {
+        console.log("SMTP Ready:", success);
+    }
 });
 
 export const sendPlanEmail = async (toEmail, markdownPlan) => {
