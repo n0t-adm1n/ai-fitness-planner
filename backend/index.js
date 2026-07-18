@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import cron from 'node-cron';
 import {db} from './firebase.js'; // Import the Firestore database instance
 import { sendPlanEmail } from './emailServices.js'; 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
@@ -62,58 +61,7 @@ app.post('/api/test-email', async (req, res) => {
   }
 });
 
-// --- The Autonomous Agent Cron Job ---
-// For testing purposes, '* * * * *' runs the job every single minute.
-// Once in production, you would change this to '0 6 * * *' to run at 6:00 AM daily.
-cron.schedule('0 6 * * *', async () => {
-  console.log('🤖 AI Agent waking up to generate daily plans...');
 
-  try {
-    // 1. Fetch all users from Firestore
-    const usersSnapshot = await db.collection('users').get();
-    
-    if (usersSnapshot.empty) {
-      console.log('No users found in database.');
-      return;
-    }
-
-    // 2. Loop through each user and generate their custom plan
-    for (const doc of usersSnapshot.docs) {
-      const user = doc.data();
-      console.log(`Generating plan for: ${user.email}`);
-
-      // Create the prompt dynamically based on the user's database entry
-      const promptTemplate = PromptTemplate.fromTemplate(`
-        You are an expert personal trainer and nutritionist. 
-        Create a 1-day workout and meal plan for this user:
-        - Goal: {fitnessGoal}
-        - Equipment: {equipment}
-        - Diet: {dietaryRestrictions}
-        Format nicely in Markdown.
-      `);
-      
-      const chain = promptTemplate.pipe(llm);
-      const response = await chain.invoke({
-        fitnessGoal: user.fitnessGoal,
-        equipment: user.equipment,
-        dietaryRestrictions: user.dietaryRestrictions
-      });
-
-      // 3. Email the generated plan to the user
-      await sendPlanEmail(user.email, response.content);
-      console.log(`✅ Plan successfully sent to ${user.email}`);
-
-      // 4. Delay for 4 seconds to avoid hitting email rate limits
-      await delay(4000); 
-    }
-
-  } catch (error) {
-    console.error('Error during autonomous agent execution:', error);
-  }
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
 
 // --- Manual Cron Trigger Route ---
 app.get('/api/trigger-emails', (req, res) => { 
