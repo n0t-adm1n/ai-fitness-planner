@@ -6,12 +6,16 @@ export const sendPlanTelegram = async (chatId, markdownPlan) => {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-    // 1. Clean up the Markdown for Telegram!
-    // Convert headers (### Heading) into Telegram bold text (*Heading*)
-    let telegramFriendlyText = markdownPlan.replace(/#{1,3}\s?(.*)/g, '*$1*');
-    
-    // Convert Gemini's double asterisks (**) into Telegram's single asterisks (*)
-    telegramFriendlyText = telegramFriendlyText.replace(/\*\*/g, '*');
+    // 1. Safely convert Gemini's Markdown to explicit HTML
+    let safeHTML = markdownPlan
+      // Convert Markdown headers (###) into HTML bold
+      .replace(/#{1,6}\s?(.*)/g, '<b>$1</b>')
+      // Convert Markdown bold (**) into HTML bold
+      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+      // Convert asterisk or dash bullet points into a clean Unicode dot
+      .replace(/^\s*[\*\-]\s/gm, '• ')
+      // Strip out any remaining rogue asterisks so they print cleanly
+      .replace(/\*/g, '');
 
     const response = await fetch(url, {
       method: 'POST',
@@ -20,9 +24,9 @@ export const sendPlanTelegram = async (chatId, markdownPlan) => {
       },
       body: JSON.stringify({
         chat_id: chatId,
-        // Notice we changed the title's asterisks to single ones too!
-        text: `💪 *Your Daily AI Fitness Plan*\n\n${telegramFriendlyText}`,
-        parse_mode: 'Markdown', // 2. Tell Telegram to render the formatting!
+        // Wrap the title in HTML bold tags
+        text: `💪 <b>Your Daily AI Fitness Plan</b>\n\n${safeHTML}`,
+        parse_mode: 'HTML', // 2. Tell Telegram to use the much safer HTML parser!
       }),
     });
 
