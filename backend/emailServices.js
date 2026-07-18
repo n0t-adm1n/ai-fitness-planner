@@ -1,7 +1,12 @@
 // backend/emailService.js
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-import { marked } from 'marked'; // <-- Import the parser
+import { marked } from 'marked';
+import dns from "dns";
+
+dns.lookup("smtp.gmail.com", (err, address, family) => {
+    console.log(err, address, family);
+}); // <-- Import the parser
 
 dotenv.config();
 
@@ -14,6 +19,9 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+
+    logger: true,
+    debug: true,
 
     connectionTimeout: 60000,
     greetingTimeout: 30000,

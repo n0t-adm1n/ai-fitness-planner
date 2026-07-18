@@ -6,6 +6,9 @@ import { sendPlanEmail } from './emailServices.js';
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from "@langchain/core/prompts";
 
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Load environment variables
