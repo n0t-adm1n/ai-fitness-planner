@@ -104,7 +104,8 @@ async function processDailyNotifications() {
         - Goal: {fitnessGoal}
         - Equipment: {equipment}
         - Diet: {dietaryRestrictions}
-        Format nicely in Markdown.
+
+        CRITICAL INSTRUCTION: You must be concise. Keep your entire response under 3,500 characters so it fits inside a single Telegram message limit. Use bullet points and avoid overly long paragraphs. Format nicely in Markdown.
       `);
       
       const chain = promptTemplate.pipe(llm);
