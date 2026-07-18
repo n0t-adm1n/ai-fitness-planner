@@ -1,36 +1,34 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const sendPlanTelegram = async (markdownPlan) => {
+// 1. Update the function to accept TWO parameters: chatId and markdownPlan
+export const sendPlanTelegram = async (chatId, markdownPlan) => {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
     
-    // The official Telegram API endpoint for sending text messages
+    // We completely removed pulling the Chat ID from process.env 
+    // because we are now passing it directly from Firestore!
+    
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-    // 1. Send the HTTP POST request to Telegram's servers
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chat_id: chatId,
-        // 2. We combine a title with the raw Gemini markdown plan
-        text: `💪 **Your Daily AI Fitness Plan**\n\n${markdownPlan}`,
+        chat_id: chatId, // 2. Uses the ID passed from Firebase
+        text: `💪 **Your Daily AI Fitness Plan**\n\n${markdownPlan}`, // 3. Uses the actual Gemini plan
       }),
     });
 
     const data = await response.json();
 
-    // 3. Check if Telegram rejected the message
     if (!data.ok) {
       console.error('Telegram API Error:', data.description);
       return false;
     }
 
-    console.log('✅ Plan successfully sent to Telegram!');
     return true;
 
   } catch (error) {
