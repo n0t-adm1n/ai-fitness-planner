@@ -20,12 +20,14 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     },
 
-    logger: true,
-    debug: true,
+    family: 4,
 
     connectionTimeout: 60000,
     greetingTimeout: 30000,
-    socketTimeout: 60000
+    socketTimeout: 60000,
+
+    logger: true,
+    debug: true
 });
 
 transporter.verify((err, success) => {
