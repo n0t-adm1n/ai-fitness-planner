@@ -1,15 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-// 1. Update the function to accept TWO parameters: chatId and markdownPlan
 export const sendPlanTelegram = async (chatId, markdownPlan) => {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    
-    // We completely removed pulling the Chat ID from process.env 
-    // because we are now passing it directly from Firestore!
-    
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+    // 1. Clean up the Markdown for Telegram!
+    // Convert headers (### Heading) into Telegram bold text (*Heading*)
+    let telegramFriendlyText = markdownPlan.replace(/#{1,3}\s?(.*)/g, '*$1*');
+    
+    // Convert Gemini's double asterisks (**) into Telegram's single asterisks (*)
+    telegramFriendlyText = telegramFriendlyText.replace(/\*\*/g, '*');
 
     const response = await fetch(url, {
       method: 'POST',
@@ -17,8 +19,10 @@ export const sendPlanTelegram = async (chatId, markdownPlan) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        chat_id: chatId, // 2. Uses the ID passed from Firebase
-        text: `💪 **Your Daily AI Fitness Plan**\n\n${markdownPlan}`, // 3. Uses the actual Gemini plan
+        chat_id: chatId,
+        // Notice we changed the title's asterisks to single ones too!
+        text: `💪 *Your Daily AI Fitness Plan*\n\n${telegramFriendlyText}`,
+        parse_mode: 'Markdown', // 2. Tell Telegram to render the formatting!
       }),
     });
 
