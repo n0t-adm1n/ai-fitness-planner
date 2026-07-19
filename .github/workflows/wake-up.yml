@@ -1,0 +1,15 @@
+name: Wake Up Render Server
+
+on:
+  schedule:
+    # GitHub uses UTC time! 00:20 UTC is exactly 5:50 AM in Indian Standard Time (IST)
+    - cron: '20 0 * * *'
+  workflow_dispatch: # This allows you to trigger it manually from the GitHub website
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit the Render URL
+        # The -sL flag tells curl to follow redirects, and --max-time 120 gives Render 2 full minutes to boot
+        run: curl -sL --max-time 120 https://ai-fitness-planner-amim.onrender.com
